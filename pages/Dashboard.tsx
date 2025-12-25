@@ -1,12 +1,12 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { User, LeaveRequest, LeaveStatus, Role } from '../types';
 import { 
   Clock, CheckCircle2, XCircle, AlertCircle, 
   Users, Zap, TrendingUp, Calendar, 
   ArrowUpRight, Heart, Briefcase, Award,
-  Activity, Download
+  Activity, Download, Copy, Check, QrCode
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -15,6 +15,13 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ user, requests }) => {
+  const [copied, setCopied] = useState(false);
+  const [appUrl, setAppUrl] = useState('');
+  
+  useEffect(() => {
+    setAppUrl(window.location.origin + window.location.pathname);
+  }, []);
+
   const totalTaken = user.balances.reduce((acc, b) => acc + b.used, 0);
   const totalLimit = user.balances.reduce((acc, b) => acc + b.total, 0);
   
@@ -28,7 +35,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, requests }) => {
   const handleInstallClick = async () => {
     const promptEvent = window.deferredPrompt;
     if (!promptEvent) {
-      alert("To install: Tap the browser menu (three dots) and select 'Add to Home Screen' or 'Install App'.");
+      alert("Installation is available when opened in mobile Chrome. If you are already on mobile, check your browser menu (three dots) for 'Install App'.");
       return;
     }
     promptEvent.prompt();
@@ -37,22 +44,46 @@ const Dashboard: React.FC<DashboardProps> = ({ user, requests }) => {
     window.deferredPrompt = null;
   };
 
+  const copyUrlToClipboard = () => {
+    navigator.clipboard.writeText(appUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
   const renderEmployeeHome = () => (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Install App Banner (Mobile Only Enhancement) */}
-      <div className="bg-indigo-900 rounded-[32px] p-6 text-white flex items-center justify-between shadow-xl shadow-indigo-100 overflow-hidden relative">
+      {/* Enhanced Install Banner */}
+      <div className="bg-indigo-900 rounded-[32px] p-6 text-white shadow-xl shadow-indigo-100 overflow-hidden relative">
         <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8 blur-xl" />
-        <div className="relative z-10">
-          <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">Mobile Experience</p>
-          <h3 className="text-lg font-bold">Install App</h3>
+        <div className="relative z-10 flex flex-col gap-4">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">Mobile Native</p>
+              <h3 className="text-lg font-bold">Install LeaveMaster</h3>
+            </div>
+            <div className="p-2 bg-white/10 rounded-xl">
+              <QrCode size={18} />
+            </div>
+          </div>
+          
+          <div className="flex gap-2">
+            <button 
+              onClick={copyUrlToClipboard}
+              className="flex-1 bg-white/10 hover:bg-white/20 py-2.5 rounded-2xl transition-all flex items-center justify-center gap-2 border border-white/10"
+            >
+              {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+              <span className="text-[11px] font-bold">{copied ? 'Copied' : 'Link'}</span>
+            </button>
+            <button 
+              onClick={handleInstallClick}
+              className="flex-1 bg-white text-indigo-900 py-2.5 rounded-2xl text-xs font-black shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+            >
+              <Download size={14} />
+              <span>Install</span>
+            </button>
+          </div>
         </div>
-        <button 
-          onClick={handleInstallClick}
-          className="bg-white text-indigo-900 px-5 py-2.5 rounded-2xl text-xs font-black shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
-        >
-          <Download size={14} />
-          <span>Get APK</span>
-        </button>
       </div>
 
       {/* Hero Stats Card */}
