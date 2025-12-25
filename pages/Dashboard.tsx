@@ -6,7 +6,7 @@ import {
   Clock, CheckCircle2, XCircle, AlertCircle, 
   Users, Zap, TrendingUp, Calendar, 
   ArrowUpRight, Heart, Briefcase, Award,
-  Activity
+  Activity, Download
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -25,8 +25,36 @@ const Dashboard: React.FC<DashboardProps> = ({ user, requests }) => {
   
   const COLORS = ['#6366f1', '#e2e8f0'];
 
+  const handleInstallClick = async () => {
+    const promptEvent = window.deferredPrompt;
+    if (!promptEvent) {
+      alert("To install: Tap the browser menu (three dots) and select 'Add to Home Screen' or 'Install App'.");
+      return;
+    }
+    promptEvent.prompt();
+    const { outcome } = await promptEvent.userChoice;
+    console.log(`User response to the install prompt: ${outcome}`);
+    window.deferredPrompt = null;
+  };
+
   const renderEmployeeHome = () => (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* Install App Banner (Mobile Only Enhancement) */}
+      <div className="bg-indigo-900 rounded-[32px] p-6 text-white flex items-center justify-between shadow-xl shadow-indigo-100 overflow-hidden relative">
+        <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8 blur-xl" />
+        <div className="relative z-10">
+          <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">Mobile Experience</p>
+          <h3 className="text-lg font-bold">Install App</h3>
+        </div>
+        <button 
+          onClick={handleInstallClick}
+          className="bg-white text-indigo-900 px-5 py-2.5 rounded-2xl text-xs font-black shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+        >
+          <Download size={14} />
+          <span>Get APK</span>
+        </button>
+      </div>
+
       {/* Hero Stats Card */}
       <div className="bg-white rounded-[40px] p-8 shadow-2xl shadow-indigo-100/50 border border-indigo-50/50 flex flex-col items-center relative overflow-hidden">
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-indigo-50 rounded-full blur-2xl opacity-60" />
